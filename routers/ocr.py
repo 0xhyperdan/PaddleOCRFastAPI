@@ -18,8 +18,6 @@ ocr = PaddleOCR(
     use_doc_orientation_classify=False,  # 通过 use_doc_orientation_classify 参数指定不使用文档方向分类模型
     use_doc_unwarping=False,  # 通过 use_doc_unwarping 参数指定不使用文本图像矫正模型
     use_textline_orientation=False,  # 通过 use_textline_orientation 参数指定不使用文本行方向分类模型
-    text_detection_model_name="PP-OCRv5_server_det",  # 指定使用 PP-OCRv5 检测模型
-    text_recognition_model_name="PP-OCRv5_server_rec",  # 指定使用 PP-OCRv5 识别模型
     lang=OCR_LANGUAGE,  # 通过 lang 参数指定使用的语言模型
 )
 
