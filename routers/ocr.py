@@ -4,7 +4,9 @@ import os
 
 import requests
 from fastapi import APIRouter, HTTPException, UploadFile, status
+import numpy as np
 from paddleocr import PaddleOCR
+from typing import Any
 
 from models.OCRModel import *
 from models.RestfulModel import *
@@ -22,9 +24,22 @@ ocr = PaddleOCR(
 )
 
 
+def _to_serializable(value: Any) -> Any:
+    """递归将 numpy 类型转换为可序列化的 Python 基本类型"""
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, (list, tuple)):
+        return [_to_serializable(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _to_serializable(val) for key, val in value.items()}
+    return value
+
+
 @router.get("/predict-by-path", response_model=RestfulModel, summary="识别本地图片")
 def predict_by_path(image_path: str):
-    result = ocr.ocr(image_path)
+    result = _to_serializable(ocr.ocr(image_path))
     restfulModel = RestfulModel(
         resultcode=200, message="Success", data=result, cls=OCRModel
     )
@@ -36,7 +51,7 @@ def predict_by_path(image_path: str):
 )
 def predict_by_base64(base64model: Base64PostModel):
     img = base64_to_ndarray(base64model.base64_str)
-    result = ocr.ocr(img=img)
+    result = _to_serializable(ocr.ocr(img=img))
     restfulModel = RestfulModel(
         resultcode=200, message="Success", data=result, cls=OCRModel
     )
@@ -52,7 +67,7 @@ async def predict_by_file(file: UploadFile):
         file_data = file.file
         file_bytes = file_data.read()
         img = bytes_to_ndarray(file_bytes)
-        result = ocr.ocr(img=img)
+        result = _to_serializable(ocr.ocr(img=img))
         restfulModel.data = result
     else:
         raise HTTPException(
@@ -72,7 +87,7 @@ async def predict_by_url(imageUrl: str):
     ):  # 只处理常见格式图片 (jpg / png)
         restfulModel.resultcode = 200
         img = bytes_to_ndarray(image_bytes)
-        result = ocr.ocr(img=img)
+        result = _to_serializable(ocr.ocr(img=img))
         restfulModel.data = result
         restfulModel.message = "Success"
     else:
