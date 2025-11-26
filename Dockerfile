@@ -1,5 +1,5 @@
-# 使用 Python 3.8 slim 基础镜像
-FROM python:3.8-slim-bullseye
+# 使用 Python 3.10.15 slim 基础镜像
+FROM python:3.10.15-slim-bullseye
 
 # 暴露端口
 EXPOSE 8000
