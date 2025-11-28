@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import os
+from typing import Any
 
+import numpy as np
 import requests
 from fastapi import APIRouter, HTTPException, UploadFile, status
-import numpy as np
 from paddleocr import PaddleOCR
-from typing import Any
 
 from models.OCRModel import *
 from models.RestfulModel import *
@@ -24,22 +24,17 @@ ocr = PaddleOCR(
 )
 
 
-def _to_serializable(value: Any) -> Any:
-    """递归将 numpy 类型转换为可序列化的 Python 基本类型"""
-    if isinstance(value, np.ndarray):
-        return value.tolist()
-    if isinstance(value, np.generic):
-        return value.item()
-    if isinstance(value, (list, tuple)):
-        return [_to_serializable(item) for item in value]
-    if isinstance(value, dict):
-        return {key: _to_serializable(val) for key, val in value.items()}
-    return value
-
-
 @router.get("/predict-by-path", response_model=RestfulModel, summary="识别本地图片")
 def predict_by_path(image_path: str):
-    result = _to_serializable(ocr.ocr(image_path))
+    result = ocr.predict(image_path)
+    # 打印结果
+    print("\n识别结果:")
+    if result and result[0]:
+        for idx, line in enumerate(result[0]):
+            print(f"{idx + 1}. 文本: {line[1][0]}, 置信度: {line[1][1]:.4f}")
+            print(f"   坐标: {line[0]}")
+    else:
+        print("未识别到文字")
     restfulModel = RestfulModel(
         resultcode=200, message="Success", data=result, cls=OCRModel
     )
@@ -51,7 +46,7 @@ def predict_by_path(image_path: str):
 )
 def predict_by_base64(base64model: Base64PostModel):
     img = base64_to_ndarray(base64model.base64_str)
-    result = _to_serializable(ocr.ocr(img=img))
+    result = ocr.predict(img))
     restfulModel = RestfulModel(
         resultcode=200, message="Success", data=result, cls=OCRModel
     )
@@ -67,7 +62,14 @@ async def predict_by_file(file: UploadFile):
         file_data = file.file
         file_bytes = file_data.read()
         img = bytes_to_ndarray(file_bytes)
-        result = _to_serializable(ocr.ocr(img=img))
+        result = ocr.predict(img)
+        print("\n识别结果:")
+        if result and result[0]:
+            for idx, line in enumerate(result[0]):
+                print(f"{idx + 1}. 文本: {line[1][0]}, 置信度: {line[1][1]:.4f}")
+                print(f"   坐标: {line[0]}")
+        else:
+            print("未识别到文字")
         restfulModel.data = result
     else:
         raise HTTPException(

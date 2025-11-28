@@ -32,10 +32,10 @@ RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade
 COPY . /app
 
 # 创建模型目录并解压模型文件
-RUN mkdir -p /root/.paddleocr/whl/det/ch/ && \
-    mkdir -p /root/.paddleocr/whl/rec/ch/ && \
-    tar xf /app/pp-ocrv5/PP-OCRv5_server_det_infer.tar -C /root/.paddleocr/whl/det/ch/ && \
-    tar xf /app/pp-ocrv5/PP-OCRv5_server_rec_infer.tar -C /root/.paddleocr/whl/rec/ch/ && \
+RUN mkdir -p /root/.paddlex/official_models/PP-OCRv5_server_det/ && \
+    mkdir -p /root/.paddlex/official_models/PP-OCRv5_server_rec && \
+    tar xf /app/pp-ocrv5/PP-OCRv5_server_det_infer.tar -C /root/.paddlex/official_models/PP-OCRv5_server_det && \
+    tar xf /app/pp-ocrv5/PP-OCRv5_server_rec_infer.tar -C /root/.paddlex/official_models/PP-OCRv5_server_rec && \
     rm -rf /app/pp-ocrv5/*.tar
 
 # 启动命令
